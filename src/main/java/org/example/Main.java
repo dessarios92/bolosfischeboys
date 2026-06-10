@@ -184,6 +184,9 @@ public class Main {
                     case 3:
                         buscarCliente();
                     break;
+                    case 4:
+                        alterarCliente();
+                    break;
                     case 6:
                         sairMenuCliente = true;
                         System.out.println(" <--- Voltando para o Menu Principal");
@@ -205,6 +208,183 @@ public class Main {
             }
         }
 
+
+    }
+    public static void alterarCliente(){
+        // A variável lista recebe uma "lista" com todos os Clientes Cadastrados
+        String lista = "";
+        lista = listCliente(2);
+
+        //Se a lista for diferente de vazio, o código entrar para parte de alteração de dados de cliente(s)
+        // Se não ela passa uma mensagem de que não possui cliente(s) cadastrados
+        if(!lista.isEmpty()){
+
+            //Se declarado e iniciado variáveis que serviram para controle de informacoes inseridas pelo usuario
+            String testarValor = "";
+            boolean conferirValor = false;
+            int codigoCliente = 0;
+
+            //A partir daqui é mostrado as mensagens orientaram o usuário a proceder no sistema
+            System.out.println("\n");
+            System.out.println("<<ALTERAR CLIENTE>>");
+            System.out.println(lista);
+            System.out.println("Digite o código do cliente para alterar as informações:");
+            System.out.println("Pressione <Enter> para continuar...");
+            testarValor = scan.nextLine();
+            conferirValor = testarValores(testarValor,3);
+            //Testa se o valor é correto através do método testarValores(String a ser testada, e o tipo inteiro de teste,
+            // conforme descrição deste metodo) se sim, é segue o fluxo do código
+
+            if(conferirValor == true) {
+                //Caso o valor que usuario digitou seja correto, será atribuido o valor de código que o usuário digitou
+                // na variável codigoCliente que servirá de pesquisa na query
+
+                codigoCliente = Integer.parseInt(testarValor);
+                String sql ="SELECT * FROM cliente where id = " + codigoCliente;
+
+                try(Connection conn = conectar();
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    ResultSet rs = stmt.executeQuery()){
+                    //É executada a Query de pesquisa, será necessário confirmar se retornou dados
+                    // Se retornar dados, segue o fluxo de execução, se não, será mostrado uma mensagem que não acho o usuário
+                    if(rs.next()) {
+                        //Ao achar o cliente será pergunta ao usuário, quais os dados que se deseja alterar
+                        System.out.println("<< ALTERAR DADOS CLIENTE >>");
+                        System.out.println("Cliente: " + rs.getString("nome"));
+                        System.out.println("Digite: ");
+                        System.out.println("1 - Alterar Telefone");
+                        System.out.println("2 - Ativar ou Desativar CLiente");
+                        System.out.println("Pressione <Enter> para continuar.");
+                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                        testarValor = scan.nextLine();
+                        conferirValor = testarMenu(testarValor);
+                        if(conferirValor == true) {
+                            //Se o valor digitado é somente numeros, entra aqui, atribui o valor digitado a uma variável,
+                            // e o fluxo é dado através de um switch case, que permite a alteração dos dados do cliente
+                            // conforme opção digitada, se a opção digitada não for encontrada, será apresentado uma mensagem de erro
+
+                            int alterarValor = Integer.parseInt(testarValor);
+                            switch (alterarValor){
+                                case 1:
+                                    testarValor = "";
+                                    conferirValor = false;
+                                    String telefone = "";
+                                    while(conferirValor == false) {
+                                        // Só sairá do loop quando o valor de telefone do usuário for correto
+                                        System.out.println("Digite o novo telefone:");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarValores(testarValor,2);
+
+                                        if (conferirValor == true) {
+                                            telefone = testarValor;
+                                            sql = "UPDATE cliente SET telefone = ? WHERE id = ?";
+
+                                            try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                stmtUpdate.setString(1, telefone);
+                                                stmtUpdate.setInt(2, codigoCliente);
+                                                int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                if(linhasAfetadas > 0) {
+                                                    System.out.println("Telefone atualizado com sucesso! Pressione <Enter> para continuar.");
+                                                    scan.nextLine();
+                                                }
+                                            }catch (Exception e){
+                                                System.out.println("FALHA ao ATUALIZAR  cliente! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                scan.nextLine();
+                                            }
+
+                                        } else {
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }
+                                break;
+                                case 2:
+                                    if(rs.getBoolean("ativo") == true){
+                                        System.out.println("Deseja DESATIVAR o cliente? Digite: 1 - Sim");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarMenu(testarValor);
+                                        if(conferirValor == true){
+                                            alterarValor = Integer.parseInt(testarValor);
+                                            if(alterarValor == 1){
+                                                sql = "UPDATE cliente SET ativo = ? WHERE id = ?";
+                                                try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                    stmtUpdate.setBoolean(1, false);
+                                                    stmtUpdate.setInt(2, codigoCliente);
+
+                                                    int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                    if(linhasAfetadas > 0) {
+                                                        System.out.println("Cliente desativado com sucesso! Pressione <Enter> para continuar.");
+                                                        scan.nextLine();
+                                                    }
+                                                }catch (Exception e){
+                                                    System.out.println("FALHA ao ATUALIZAR  cliente! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                    scan.nextLine();
+                                                }
+                                            }
+                                        }else{
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }else{
+                                        System.out.println("Deseja ATIVAR o cliente? Digite: 1 - Sim");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarMenu(testarValor);
+                                        if(conferirValor == true){
+                                            alterarValor = Integer.parseInt(testarValor);
+                                            if(alterarValor == 1){
+                                                sql = "UPDATE cliente SET ativo = ? WHERE id = ?";
+                                                try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                    stmtUpdate.setBoolean(1, true);
+                                                    stmtUpdate.setInt(2, codigoCliente);
+
+                                                    int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                    if(linhasAfetadas > 0) {
+                                                        System.out.println("Cliente ativado com sucesso! Pressione <Enter> para continuar.");
+                                                        scan.nextLine();
+                                                    }
+                                                }catch (Exception e){
+                                                    System.out.println("FALHA ao ATUALIZAR  cliente! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                    scan.nextLine();
+                                                }
+                                            }
+                                        }else{
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }
+
+                                break;
+                                default:
+                                    System.out.println("Valor informado para alteração de dados é inválido (Pressione <Enter> para continuar):");
+                                    scan.nextLine();
+                                    break;
+                            }
+                        }else{
+                            System.out.println("Valor deve conter apenas numeros. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+                    }else{
+                        System.out.println("Cliente não encontrado! Pressione <Enter> para continuar");
+                        scan.nextLine();
+                    }
+
+                }catch (Exception e){
+                    System.out.println("FALHA ao BUSCAR a lista de cliente(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                    scan.nextLine();
+                }
+            }else{
+                System.out.println("Valor deve conter apenas numeros. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+        }else{
+            System.out.println("Nenhum cliente cadastrado! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
 
     }
     public static void buscarCliente(){
@@ -313,7 +493,7 @@ public class Main {
                                 " Ativo: " + respoAtivo + "\n";
                     break;
                     case 2:
-                        resultado += " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
+                        resultado += " Codigo:" + rs.getInt("id") + " | " + " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
                                 " Ativo: " + respoAtivo + "\n";
                     break;
                     default:
@@ -436,7 +616,8 @@ public class Main {
 				O parâmetro "tipoTesteValor" define qual regra de validação será aplicada.
 				Tipos de validação:
 					1 - Nome: Aceita apenas letras e espaços e até 100 caracteres.
-					5 - Telefone: Aceita apenas números com até 20 caracteres.
+					2 - Telefone: Aceita apenas números com até 20 caracteres.
+					3 - Codigo: Aceita apenas números com até 10 caracteres.
 					Retorno: Retona se o valor é verdadeiro ou não
 
 		 */
@@ -455,6 +636,12 @@ public class Main {
                     retornarValor = true;
                 }
                 break;
+            case 3:
+                //Testa uma variável tipo String: se ela é diferente de vazia, se ela é menor e igual a 10 caracteres e se tem somente numeros
+                if(!testarValor.isEmpty() && testarValor.length() <= 10 && testarValor.matches("\\d+")) {
+                    retornarValor = true;
+                }
+            break;
             default:
                 System.out.println("Opção invalida! Favor verificar a passagem de parâmetros em testarValores().");
                 break;
