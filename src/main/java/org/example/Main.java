@@ -28,14 +28,14 @@ public class Main {
 
 
     //RANIERI PC TRABALHO
-    private static final String bd_URL = "jdbc:mariadb://localhost:3306/bolos_fischboys";
-    private static final String bd_Usuario = "root";
-    private static final String bd_senha = "";
+    //private static final String bd_URL = "jdbc:mariadb://localhost:3306/bolos_fischboys";
+    //private static final String bd_Usuario = "root";
+    //private static final String bd_senha = "";
 
     //RANIERI NOTE CASA
-    //private static final String bd_URL = "jdbc:mariadb://localhost:3369/bolos_fischboys";
-    //private static final String bd_Usuario = "root";
-    //private static final String bd_senha = "Tubarao1983!";
+    private static final String bd_URL = "jdbc:mariadb://localhost:3369/bolos_fischboys";
+    private static final String bd_Usuario = "root";
+    private static final String bd_senha = "Tubarao1983!";
 
         /*
             COMENTARIO 002:
@@ -583,7 +583,8 @@ public class Main {
                     }else {
                         respoAtivo = "Desativado";
                     }
-                    lista += " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
+                    //Ultima Linha que eu alterei
+                    lista += " Codigo:" + rs.getInt("id") + " | " + " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
                             " Ativo: " + respoAtivo + "\n";
                 }
             }catch (Exception e){
@@ -592,7 +593,6 @@ public class Main {
             }
             if(!lista.isEmpty()){
                 System.out.println("<<LISTAR CLIENTES>>");
-                System.out.println("\n");
                 System.out.println(lista);
                 System.out.println("Pressione <Enter> para continuar...");
                 scan.nextLine();
@@ -616,7 +616,6 @@ public class Main {
 
         if(!lista.isEmpty()){
             System.out.println("<<LISTAR CLIENTES>>");
-            System.out.println("\n");
             System.out.println(lista);
             System.out.println("Pressione <Enter> para continuar...");
             scan.nextLine();
@@ -655,7 +654,7 @@ public class Main {
                 }
                 switch (tipoLista){
                     case 1:
-                        resultado += " Nome: " + rs.getString("nome") + " | " +
+                        resultado += " Codigo:" + rs.getInt("id") + " | " + " Nome: " + rs.getString("nome") + " | " +
                                 " Ativo: " + respoAtivo + "\n";
                     break;
                     case 2:
