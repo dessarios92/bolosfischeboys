@@ -158,7 +158,7 @@ public class Main {
             System.out.println("=============GERENCIAR CLIENTE===========");
             System.out.println("1 - Cadastrar Cliente");
             System.out.println("2 - Listar Todos Clientes");
-            System.out.println("3 - Buscar por (Nome) ou (CPF) do Cliente");
+            System.out.println("3 - Buscar por (Nome) do Cliente");
             System.out.println("4 - Alterar dados do Cliente");
             System.out.println("5 - Deletar/Desativar Cliente");
             System.out.println("6 - <-- Voltar");
@@ -178,7 +178,12 @@ public class Main {
                     case 1:
                         cadastrarCliente();
                     break;
-
+                    case 2:
+                        listarCliente();
+                    break;
+                    case 3:
+                        buscarCliente();
+                    break;
                     case 6:
                         sairMenuCliente = true;
                         System.out.println(" <--- Voltando para o Menu Principal");
@@ -202,6 +207,131 @@ public class Main {
 
 
     }
+    public static void buscarCliente(){
+        String lista = "";
+        String buscar = "";
+        boolean conferirValor = false;
+
+        System.out.println("\n");
+        System.out.println("<<BUSCAR CLIENTE>>");
+        System.out.println("Digite um nome para buscar as informações do cliente:");
+        System.out.println("Pressione <Enter> para continuar...");
+        buscar = scan.nextLine();
+
+        conferirValor = testarValores(buscar,1);
+        //Testa se o valor é correto, se sim, é atribuido a variavel nome o nome do usuário
+        if(conferirValor == true) {
+            String sql ="SELECT * FROM cliente where nome LIKE '" + buscar + "%'";
+
+            try(Connection conn = conectar();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()){
+
+                while(rs.next()){
+                    boolean clienteAtivo = false;
+                    String respoAtivo = "";
+
+                    clienteAtivo = rs.getBoolean("ativo");
+
+                    if(clienteAtivo == true) {
+                        respoAtivo = "Ativo";
+                    }else {
+                        respoAtivo = "Desativado";
+                    }
+                    lista += " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
+                            " Ativo: " + respoAtivo + "\n";
+                }
+            }catch (Exception e){
+                System.out.println("FALHA ao BUSCAR a lista de cliente(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                scan.nextLine();
+            }
+            if(!lista.isEmpty()){
+                System.out.println("<<LISTAR CLIENTES>>");
+                System.out.println("\n");
+                System.out.println(lista);
+                System.out.println("Pressione <Enter> para continuar...");
+                scan.nextLine();
+            }else {
+                System.out.println("Nenhum cliente encontrado! Pressione <Enter> para continuar");
+                scan.nextLine();
+            }
+        }else {
+            System.out.println("O nome deve conter apenas letras. Favor tentar novamente (Pressione <Enter> para continuar):");
+            scan.nextLine();
+        }
+    }
+    public static void listarCliente(){
+        String lista = "";
+
+        System.out.println("\n");
+        System.out.println("Pressione <Enter> para Gerar a Lista de Clientes:");
+        scan.nextLine();
+
+        lista = listCliente(2);
+
+        if(!lista.isEmpty()){
+            System.out.println("<<LISTAR CLIENTES>>");
+            System.out.println("\n");
+            System.out.println(lista);
+            System.out.println("Pressione <Enter> para continuar...");
+            scan.nextLine();
+        }else {
+            System.out.println("Nenhum cliente encontrado! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
+
+    }
+    public static String listCliente(int tipoLista){
+        /*
+            COMENTARIO 009:
+ 				O método lisCliente serve para listar os clientes conforme o tipo de passagem de parâmetros, onde:
+ 				      1 - Lista Resumida somente com Numero de Cadastro e Nome
+ 				      2 - Lista Completa com todos os dados do cliente
+        */
+
+        String resultado = "";
+        String sql ="SELECT * FROM cliente";
+
+        try(Connection conn = conectar();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()){
+
+            while (rs.next()){
+                boolean clienteAtivo = false;
+                String respoAtivo = "";
+
+                clienteAtivo = rs.getBoolean("ativo");
+
+                if(clienteAtivo == true) {
+                    respoAtivo = "Ativo";
+                }else {
+                    respoAtivo = "Desativado";
+                }
+                switch (tipoLista){
+                    case 1:
+                        resultado += " Nome: " + rs.getString("nome") + " | " +
+                                " Ativo: " + respoAtivo + "\n";
+                    break;
+                    case 2:
+                        resultado += " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
+                                " Ativo: " + respoAtivo + "\n";
+                    break;
+                    default:
+                        System.out.println("Opção invalida! Favor verificar a passagem de parâmetros em listCliente().");
+                    break;
+                }
+
+
+            }
+
+        }catch (Exception e){
+            System.out.println("FALHA ao fazer a lista de cliente(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+            scan.nextLine();
+        }
+
+
+        return resultado;
+    }
     public static void cadastrarCliente(){
         /*
  			COMENTARIO 009:
@@ -215,7 +345,7 @@ public class Main {
         boolean conferirValor = false;
 
         //Variáveis que irão atribuir valores inseridos após verificação
-        String nome = ""; //Não pode conter mais do que 100 caracteres
+        String nome = ""; //Não pode conter mais do que 100 caracteres e tem que ser somente letras
         String telefone = ""; // Não pode conter mais do que 20 caracteres e deve ser somente numeros
 
         //PRIMEIRO TESTE -> Nome do Usuário
