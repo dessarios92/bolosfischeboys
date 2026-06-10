@@ -197,6 +197,9 @@ public class Main {
                     case 4:
                         alterarCliente();
                     break;
+                    case 5:
+                        deletarCliente();
+                    break;
                     case 6:
                         sairMenuCliente = true;
                         System.out.println(" <--- Voltando para o Menu Principal");
@@ -219,6 +222,83 @@ public class Main {
         }
 
 
+    }
+    public static void deletarCliente(){
+        // A variável lista recebe uma "lista" com todos os Clientes Cadastrados
+        String lista = "";
+        lista = listCliente(3);
+        //Se a lista for diferente de vazio, o código entrar para parte de alteração de dados de cliente(s)
+        // Se não ela passa uma mensagem de que não possui cliente(s) cadastrados
+        if(!lista.isEmpty()){
+            //Se declarado e iniciado variáveis que serviram para controle de informacoes inseridas pelo usuario
+            String testarValor = "";
+            boolean conferirValor = false;
+            int codigoCliente = 0;
+
+            //A partir daqui é mostrado as mensagens orientaram o usuário a proceder no sistema
+            System.out.println("\n");
+            System.out.println("<<DELETAR CLIENTE>>");
+            System.out.println("ATENÇÃO! Conforme Lei LGPD, os Cliente(s) NÃO PODEM SER DELETADOS!");
+            System.out.println(lista);
+            System.out.println("Digite o código do cliente para desativa-lo:");
+            System.out.println("Pressione <Enter> para continuar...");
+            testarValor = scan.nextLine();
+            conferirValor = testarValores(testarValor,3);
+            //Testa se o valor é correto através do método testarValores(String a ser testada, e o tipo inteiro de teste,
+            // conforme descrição deste metodo) se sim, é segue o fluxo do código
+            if(conferirValor == true) {
+                //Caso o valor que usuario digitou seja correto, será atribuido o valor de código que o usuário digitou
+                // na variável codigoCliente que servirá de pesquisa na query
+
+                codigoCliente = Integer.parseInt(testarValor);
+                String sql = "SELECT * FROM cliente where id = " + codigoCliente;
+                try(Connection conn = conectar();
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    ResultSet rs = stmt.executeQuery()){
+                    if(rs.next()) {
+                        System.out.println("Deseja DESATIVAR o cliente? Digite: 1 - Sim");
+                        System.out.println("Pressione <Enter> para continuar.");
+                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                        testarValor = scan.nextLine();
+                        conferirValor = testarMenu(testarValor);
+                        if(conferirValor == true){
+                            int alterarValor = Integer.parseInt(testarValor);
+                            if(alterarValor == 1){
+                                sql = "UPDATE cliente SET ativo = ? WHERE id = ?";
+                                try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                    stmtUpdate.setBoolean(1, false);
+                                    stmtUpdate.setInt(2, codigoCliente);
+
+                                    int linhasAfetadas = stmtUpdate.executeUpdate();
+                                    if(linhasAfetadas > 0) {
+                                        System.out.println("Cliente desativado com sucesso! Pressione <Enter> para continuar.");
+                                        scan.nextLine();
+                                    }
+                                }catch (Exception e){
+                                    System.out.println("FALHA ao ATUALIZAR  cliente! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                    scan.nextLine();
+                                }
+                            }
+                        }else{
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+                    }else{
+                        System.out.println("Cliente não encontrado! Pressione <Enter> para continuar");
+                        scan.nextLine();
+                    }
+                }catch(Exception e){
+                    System.out.println("FALHA ao BUSCAR a lista de cliente(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                    scan.nextLine();
+                }
+            }else{
+                System.out.println("Valor deve conter apenas numeros. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+        }else{
+            System.out.println("Nenhum cliente cadastrado, ou nenhum cliente ATIVO! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
     }
     public static void alterarCliente(){
         // A variável lista recebe uma "lista" com todos os Clientes Cadastrados
@@ -477,6 +557,7 @@ public class Main {
  				O método lisCliente serve para listar os clientes conforme o tipo de passagem de parâmetros, onde:
  				      1 - Lista Resumida somente com Numero de Cadastro e Nome
  				      2 - Lista Completa com todos os dados do cliente
+ 				      3 - Lista Completa com SOMENTE Usuarios ATIVOS
         */
 
         String resultado = "";
@@ -505,6 +586,12 @@ public class Main {
                     case 2:
                         resultado += " Codigo:" + rs.getInt("id") + " | " + " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
                                 " Ativo: " + respoAtivo + "\n";
+                    break;
+                    case 3:
+                        if(rs.getBoolean("ativo") == true){
+                            resultado += " Codigo:" + rs.getInt("id") + " | " + " Nome: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + " | " +
+                                    " Ativo: " + respoAtivo + "\n";
+                        }
                     break;
                     default:
                         System.out.println("Opção invalida! Favor verificar a passagem de parâmetros em listCliente().");
