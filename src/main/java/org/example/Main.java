@@ -147,80 +147,14 @@ public class Main {
         }
         return testarMenu;
     }
-    public static void gerenciarBolos(){
-        //Declaracao da Variaveis da Area gerenciar Bolos
-        boolean sairMenuCliente = false;
-        boolean operadorMenu = false;
-        int opcaoMenu = 0;
-        String digitarMenu = "";
-        while(sairMenuCliente == false){
-            /*
-                COMENTARIO 007:
-                    Este Loop controla os Menus Gerenciais do sistema, ele funciona da seguinte maneira:
-                        1 - digitarMenu = scan.nextLine() Após o <Enter> , é atribuido um valor digitado
-                            para uma variavel tipo String, que vai ser testado o valor.
-                        2 -	operadorMenu = testarMenu(digitarMenu), o teste do valor é dado através de uma
-                            funcao que retorna um booleano, onde: se o valor digitado recebeu somente numero,
-                            ele atribui valor verdadeiro para a variavel.
-             */
+
+    /*
+
+      COLOCAR O CODIGO DOS BOLOS AQUI
+
+    */
 
 
-            System.out.println("=============GERENCIAR BOLOS===========");
-            System.out.println("1 - Cadastrar Bolos");
-            System.out.println("2 - Listar Todos Bolos");
-            System.out.println("3 - Buscar por (Nome) do Bolos");
-            System.out.println("4 - Alterar dados do Bolos");
-            System.out.println("5 - Deletar/Desativar Bolos");
-            System.out.println("6 - <-- Voltar");
-            System.out.println("Selecione uma opção do Menu e pressione <Enter>:");
-            digitarMenu = scan.nextLine();
-            operadorMenu = testarMenu(digitarMenu);
-
-            if(operadorMenu == true) {
-                 /*
-                    COMENTARIO 008:
-        		 	    Se a opção do Menu foi digitada correta, é atribuido um valor inteiro para a variavel opcaoMenu.
-        		 	    Sendo convertido o valor tipo String em Char (Unico caractere, pegando a primeira posicao 0) numerico,
-        		 	    que será a opção do Menu.
-        		 */
-                opcaoMenu = Character.getNumericValue(digitarMenu.charAt(0));
-                switch(opcaoMenu) {
-                    case 1:
-                        //cadastrarBolo();
-                        break;
-                    case 2:
-                        //listarCliente();
-                        break;
-                    case 3:
-                        //buscarCliente();
-                        break;
-                    case 4:
-                        //alterarCliente();
-                        break;
-                    case 5:
-                        //deletarCliente();
-                        break;
-                    case 6:
-                        sairMenuCliente = true;
-                        System.out.println(" <--- Voltando para o Menu Principal");
-                        System.out.println("Selecione uma opção do Menu e pressione <Enter>:");
-                        scan.nextLine();
-                        break;
-                    default:
-                        System.out.println("\n");
-                        System.out.println("Opção invalida! favor tentar novamente.");
-                        System.out.println("Pressione <Enter> para continuar...");
-                        scan.nextLine();
-                        break;
-                }
-            }else{
-                System.out.println("\n");
-                System.out.println("Favor digitar somente numeros: " + " 1,2,3.." + "para a opção do Menu.");
-                System.out.println("Pressione <Enter> para continuar...");
-                scan.nextLine();
-            }
-        }
-    }
     public static void gerenciarCliente(){
         //Declaracao da Variaveis da Area gerenciar Cliente
         boolean sairMenuCliente = false;
@@ -810,6 +744,12 @@ public class Main {
             case 3:
                 //Testa uma variável tipo String: se ela é diferente de vazia, se ela é menor e igual a 10 caracteres e se tem somente numeros
                 if(!testarValor.isEmpty() && testarValor.length() <= 10 && testarValor.matches("\\d+")) {
+                    retornarValor = true;
+                }
+            break;
+            case 4:
+                //Testa uma variável tipo decimal: se ela é diferente de vazia, se ela é menor e igual a 10 caracteres e se tem somente numeros
+                if(!testarValor.isEmpty() && testarValor.matches("\\d+([,.]\\d{1,2})?")) {
                     retornarValor = true;
                 }
             break;
