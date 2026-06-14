@@ -7,6 +7,10 @@ package org.example;
 import java.sql.*;
 /*I mportante! Observar que ao importar recursos do SQL, ele importa TODOS os recursos do pacote atráves do caracter */
 import java.util.Scanner;
+import java.sql.Date;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,7 +96,8 @@ public class Main {
                         gerenciarBolos();
                     break;
                     case 3:
-                        break;
+                        gerenciarVendas();
+                    break;
                     case 4:
                         System.out.println("\n");
                         System.out.println("Deseja realmente sair do sistema? 1) Sim 2) Não");
@@ -148,13 +153,968 @@ public class Main {
         return testarMenu;
     }
 
-    /*
+    /*Gerenciar Vendas*/
 
-      COLOCAR O CODIGO DOS BOLOS AQUI
+    public static void cadastrarVenda(){
 
-    */
+        //Variáveis que irão auxiliar e testar valores inseridos
+        String testarValor = "";
+        boolean conferirValor = false;
+
+        //Variáveis que irão atribuir valores inseridos após verificação
+        String dt_venda = "";
+        String dt_entrega = "";
+        int id_cliente = 0;
+        int id_bolo = 0;
+        int qtd_venda = 0;
+
+        double valtotal = 0;
+
+        String sqlBolo ="SELECT * FROM bolo where ativo = true";
+        String sqlCliente ="SELECT * FROM cliente where ativo = true";
 
 
+
+        try(Connection conn = conectar();
+            PreparedStatement stBolo = conn.prepareStatement(sqlBolo);
+            ResultSet rsBolo = stBolo.executeQuery()){
+            try(PreparedStatement stCli = conn.prepareStatement(sqlCliente);
+                ResultSet rsCli = stCli.executeQuery()){
+
+                if(rsBolo.next() && rsCli.next()){
+
+                    //PRIMEIRO TESTE -> DATA VENDA
+                    while(conferirValor == false) {
+                        // Só sairá do loop quando o valor de nome do usuário for correto
+                        System.out.println("\n");
+                        System.out.println("<<CADASTRAR VENDA>>");
+                        System.out.println("Digite a Data da venda com / ou - (DD-MM-YYYY): (Pressione <Enter> para continuar):");
+                        testarValor = scan.nextLine();
+
+                        conferirValor = testarValores(testarValor,5);
+                        //Testa se o valor é correto, se sim, é atribuido a variavel nome o nome do usuário
+                        if(conferirValor == true) {
+                            dt_venda = testarValor;
+                        }else {
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+
+
+                    }
+
+                    testarValor = "";
+                    conferirValor = false;
+                    //SEGUNDO TESTE -> DATA Entrega
+                    while(conferirValor == false) {
+                        // Só sairá do loop quando o valor de nome do usuário for correto
+                        System.out.println("\n");
+                        System.out.println("<<CADASTRAR VENDA>>");
+                        System.out.println("Digite a Data da Entrega com / ou - (DD-MM-YYYY): (Pressione <Enter> para continuar):");
+                        testarValor = scan.nextLine();
+
+                        conferirValor = testarValores(testarValor,5);
+                        //Testa se o valor é correto, se sim, é atribuido a variavel nome o nome do usuário
+                        if(conferirValor == true) {
+                            dt_entrega = testarValor;
+                        }else {
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+
+
+                    }
+
+
+                    testarValor = "";
+                    conferirValor = false;
+                    //TERCEIRO TESTE -> Código Cliente
+                    while(conferirValor == false){
+                        String lista = "";
+                        lista = listCliente(3);
+                        System.out.println("<<CADASTRAR VENDA>>");
+                        System.out.println(lista);
+                        System.out.println("Digite o codigo do cliente para a venda: (Pressione <Enter> para continuar):");
+                        testarValor = scan.nextLine();
+
+                        conferirValor = testarValores(testarValor,3);
+                        if(conferirValor == true) {
+                            int numerodig = Integer.parseInt(testarValor);
+                            sqlCliente ="SELECT * FROM cliente where id = ? and ativo = true";
+
+
+                            try (PreparedStatement stmt = conn.prepareStatement(sqlCliente)) {
+
+                                stmt.setInt(1, numerodig);
+
+                                ResultSet rs = stmt.executeQuery();
+
+                                if(rs.next()){
+                                    id_cliente = numerodig;
+                                    conferirValor = true;
+                                } else {
+                                    conferirValor = false;
+                                    System.out.println("Cliente não encontrado, favor tentar novamente! Pressione <Enter> para continuar:");
+                                    scan.nextLine();
+                                }
+                            }
+
+                        }else {
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+
+                    }
+
+                    testarValor = "";
+                    conferirValor = false;
+                    //QUARTO TESTE -> Código Bolo
+                    while(conferirValor == false){
+                        String lista = "";
+                        lista = listBolo(3);
+                        System.out.println("<<CADASTRAR VENDA>>");
+                        System.out.println(lista);
+                        System.out.println("Digite o codigo do bolo para a venda: (Pressione <Enter> para continuar):");
+                        testarValor = scan.nextLine();
+
+                        conferirValor = testarValores(testarValor,3);
+                        if(conferirValor == true) {
+                            int numerodig = Integer.parseInt(testarValor);
+                            sqlBolo ="SELECT * FROM bolo where id = ? and ativo = true";
+
+
+                            try (PreparedStatement stmt = conn.prepareStatement(sqlBolo)) {
+
+                                stmt.setInt(1, numerodig);
+
+                                ResultSet rs = stmt.executeQuery();
+
+                                if(rs.next()){
+                                    id_bolo = numerodig;
+                                    conferirValor = true;
+                                } else {
+                                    conferirValor = false;
+                                    System.out.println("Bolo não encontrado, favor tentar novamente! Pressione <Enter> para continuar:");
+                                    scan.nextLine();
+                                }
+                            }
+
+                        }else {
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+
+                    }
+
+                    testarValor = "";
+                    conferirValor = false;
+                    //QUINTO TESTE -> Estoque do bolo
+                    while(conferirValor == false) {
+                        // Só sairá do loop quando o valor de estoque do usuário for correto
+                        System.out.println("\n");
+                        System.out.println("<<CADASTRAR VENDA>>");
+                        System.out.println("Digite o total de bolo(s) vendidos (Pressione <Enter> para continuar):");
+                        testarValor = scan.nextLine();
+
+                        conferirValor = testarValores(testarValor, 2);
+                        //Testa se o valor é correto, se sim, é atribuido a variavel email o e-mail do usuário
+
+                        if(conferirValor == true) {
+                            int testeQtdVenda = Integer.parseInt(testarValor);
+
+                            String sqlBoloqtd ="SELECT * FROM bolo where id = ? and ativo = true";
+                            try (PreparedStatement stmt = conn.prepareStatement(sqlBoloqtd)) {
+
+                                stmt.setInt(1, id_bolo);
+                                ResultSet rs = stmt.executeQuery();
+
+                                if(rs.next()){
+
+                                    if(rs.getInt("estoque") >= testeQtdVenda){
+                                        qtd_venda = testeQtdVenda;
+                                        valtotal = rs.getDouble("preco") * qtd_venda;
+                                        conferirValor = true;
+                                    } else {
+                                        System.out.println("Quantidade solicitada é maior que estoque disponível. Pressione <Enter> para continuar:");
+                                        scan.nextLine();
+                                        conferirValor = false;
+                                    }
+                                }else{
+                                    System.out.println("FALHA ao buscar a estoque de bolo(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                    scan.nextLine();
+                                }
+
+                            }catch (Exception e){
+                                System.out.println("Falha ao conferir valores do estoque. Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                e.printStackTrace();
+                                scan.nextLine();
+                            }
+                        }else {
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+                    }
+
+                    // IMPORTANTE! É INCIADO E ATRIBUIDO na a varável sql o comando de SQL para inserção dos dados
+                    String sql ="INSERT INTO venda (data_venda, data_entrega, qtd_venda, valor_total, cliente_id, bolo_id) VALUES(?,?,?,?,?,?)";
+
+                    //PREPARA A DATA PARA SER FORMATADA PELO BANCO
+                    dt_venda = dt_venda.replace("-", "/");
+                    dt_entrega = dt_entrega.replace("-", "/");
+
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
+                    LocalDate localDateVenda = LocalDate.parse(dt_venda, formatter);
+                    LocalDate localDateEntrega = LocalDate.parse(dt_entrega, formatter);
+
+                    Date dataVendaSql = Date.valueOf(localDateVenda);
+                    Date dataEntregaSql = Date.valueOf(localDateEntrega);
+
+                    try(PreparedStatement stmt = conn.prepareStatement(sql)){
+
+                        stmt.setDate(1,dataVendaSql);
+                        stmt.setDate(2,dataEntregaSql);
+                        stmt.setInt(3,qtd_venda);
+                        stmt.setDouble(4,valtotal);
+                        stmt.setInt(5,id_cliente);
+                        stmt.setInt(6,id_bolo);
+
+                        int linhasAfetadas = stmt.executeUpdate();
+
+                        if (linhasAfetadas>0){
+                            String sqlBOLO = "UPDATE bolo SET estoque = ? where id = " + id_bolo;
+                            String sqlEstoque = "SELECT * FROM bolo where id = " + id_bolo;
+
+                            try(PreparedStatement stmtColeta = conn.prepareStatement(sqlEstoque)){
+                                ResultSet rsColeta = stmtColeta.executeQuery();
+
+                                if(rsColeta.next()){
+                                    int valorFinalEstoque = rsColeta.getInt("estoque") - qtd_venda;
+
+                                    try(PreparedStatement stmtUp = conn.prepareStatement(sqlBOLO)){
+                                        stmtUp.setInt(1, valorFinalEstoque);
+                                        stmtUp.executeUpdate();
+                                    }
+                                }
+
+
+                            }catch (Exception E){
+                                System.out.println("FALHA ao atualizar estoque! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                scan.nextLine();
+                            }
+                            System.out.println("Venda salva com SUCESSO! Pressione <Enter> para continuar:");
+                            scan.nextLine();
+                        }
+                    } catch (Exception e) {
+                        System.out.println("FALHA ao salvar o venda! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                        scan.nextLine();
+                        throw new RuntimeException(e);
+                    }
+                }else{
+                    System.out.println("Não há bolo(s) e/ou cliente(s) ativos ou cadastrados. Pressione <Enter> para continuar:");
+                    scan.nextLine();
+                }
+            }catch (Exception e){
+                System.out.println("FALHA ao buscar a lista de cliente(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                scan.nextLine();
+            }
+
+        }catch (Exception e){
+            System.out.println("FALHA ao buscar a lista de bolo(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+            scan.nextLine();
+        }
+
+
+    }
+    public static void gerenciarVendas(){
+        //Declaracao da Variaveis da Area gerenciar Vendas
+        boolean sairMenuVendas = false;
+        boolean operadorMenu = false;
+        int opcaoMenu = 0;
+        String digitarMenu = "";
+
+        while(sairMenuVendas == false){
+            /*
+                COMENTARIO 007:
+                    Este Loop controla os Menus Gerenciais do sistema, ele funciona da seguinte maneira:
+                        1 - digitarMenu = scan.nextLine() Após o <Enter> , é atribuido um valor digitado
+                            para uma variavel tipo String, que vai ser testado o valor.
+                        2 -	operadorMenu = testarMenu(digitarMenu), o teste do valor é dado através de uma
+                            funcao que retorna um booleano, onde: se o valor digitado recebeu somente numero,
+                            ele atribui valor verdadeiro para a variavel.
+             */
+            System.out.println("=============GERENCIAR VENDAS===========");
+            System.out.println("1 - Cadastrar Vendas");
+            System.out.println("2 - Relatório Completo de Vendas");
+            System.out.println("3 - <-- Voltar");
+            System.out.println("Selecione uma opção do Menu e pressione <Enter>:");
+            digitarMenu = scan.nextLine();
+            operadorMenu = testarMenu(digitarMenu);
+
+            if(operadorMenu == true) {
+                 /*
+                    COMENTARIO 008:
+        		 	    Se a opção do Menu foi digitada correta, é atribuido um valor inteiro para a variavel opcaoMenu.
+        		 	    Sendo convertido o valor tipo String em Char (Unico caractere, pegando a primeira posicao 0) numerico,
+        		 	    que será a opção do Menu.
+        		 */
+                opcaoMenu = Character.getNumericValue(digitarMenu.charAt(0));
+                switch(opcaoMenu) {
+                    case 1:
+                        cadastrarVenda();
+                    break;
+                    case 3:
+                        sairMenuVendas = true;
+                        System.out.println(" <--- Voltando para o Menu Principal");
+                        System.out.println("Selecione uma opção do Menu e pressione <Enter>:");
+                        scan.nextLine();
+                        break;
+                    default:
+                        System.out.println("\n");
+                        System.out.println("Opção invalida! favor tentar novamente.");
+                        System.out.println("Pressione <Enter> para continuar...");
+                        scan.nextLine();
+                        break;
+                }
+            }else{
+                System.out.println("\n");
+                System.out.println("Favor digitar somente numeros: " + " 1,2,3.." + "para a opção do Menu.");
+                System.out.println("Pressione <Enter> para continuar...");
+                scan.nextLine();
+            }
+        }
+    }
+
+    /*Gerenciar Bolos*/
+    public static void gerenciarBolos(){
+        //Declaracao da Variaveis da Area gerenciar Bolos
+        boolean sairMenuCliente = false;
+        boolean operadorMenu = false;
+        int opcaoMenu = 0;
+        String digitarMenu = "";
+        while(sairMenuCliente == false){
+            /*
+                COMENTARIO 007:
+                    Este Loop controla os Menus Gerenciais do sistema, ele funciona da seguinte maneira:
+                        1 - digitarMenu = scan.nextLine() Após o <Enter> , é atribuido um valor digitado
+                            para uma variavel tipo String, que vai ser testado o valor.
+                        2 -	operadorMenu = testarMenu(digitarMenu), o teste do valor é dado através de uma
+                            funcao que retorna um booleano, onde: se o valor digitado recebeu somente numero,
+                            ele atribui valor verdadeiro para a variavel.
+             */
+
+
+            System.out.println("=============GERENCIAR BOLOS===========");
+            System.out.println("1 - Cadastrar Bolos");
+            System.out.println("2 - Listar Todos Bolos");
+            System.out.println("3 - Buscar por (Nome) do Bolos");
+            System.out.println("4 - Alterar dados do Bolos");
+            System.out.println("5 - Deletar/Desativar Bolos");
+            System.out.println("6 - <-- Voltar");
+            System.out.println("Selecione uma opção do Menu e pressione <Enter>:");
+            digitarMenu = scan.nextLine();
+            operadorMenu = testarMenu(digitarMenu);
+
+            if(operadorMenu == true) {
+                 /*
+                    COMENTARIO 008:
+        		 	    Se a opção do Menu foi digitada correta, é atribuido um valor inteiro para a variavel opcaoMenu.
+        		 	    Sendo convertido o valor tipo String em Char (Unico caractere, pegando a primeira posicao 0) numerico,
+        		 	    que será a opção do Menu.
+        		 */
+                opcaoMenu = Character.getNumericValue(digitarMenu.charAt(0));
+                switch(opcaoMenu) {
+                    case 1:
+                        cadastrarBolo();
+                        break;
+                    case 2:
+                        listarBolo();
+                        break;
+                    case 3:
+                        buscarBolo();
+                        break;
+                    case 4:
+                        alterarBolo();
+                        break;
+                    case 5:
+                        deletarBolo();
+                        break;
+                    case 6:
+                        sairMenuCliente = true;
+                        System.out.println(" <--- Voltando para o Menu Principal");
+                        System.out.println("Selecione uma opção do Menu e pressione <Enter>:");
+                        scan.nextLine();
+                        break;
+                    default:
+                        System.out.println("\n");
+                        System.out.println("Opção invalida! favor tentar novamente.");
+                        System.out.println("Pressione <Enter> para continuar...");
+                        scan.nextLine();
+                        break;
+                }
+            }else{
+                System.out.println("\n");
+                System.out.println("Favor digitar somente numeros: " + " 1,2,3.." + "para a opção do Menu.");
+                System.out.println("Pressione <Enter> para continuar...");
+                scan.nextLine();
+            }
+        }
+    }
+    public static void deletarBolo(){
+        // A variável lista recebe uma "lista" com todos os Clientes Cadastrados
+        String lista = "";
+        lista = listBolo(3);
+        //Se a lista for diferente de vazio, o código entrar para parte de desativacao de bolo(s)
+        // Se não ela passa uma mensagem de que não possui bolo(s) cadastrados
+        if(!lista.isEmpty()){
+            //Se declarado e iniciado variáveis que serviram para controle de informacoes inseridas pelo usuario
+            String testarValor = "";
+            boolean conferirValor = false;
+            int codigoBolo = 0;
+
+            //A partir daqui é mostrado as mensagens orientaram o usuário a proceder no sistema
+            System.out.println("\n");
+            System.out.println("<<DELETAR BOLO>>");
+            System.out.println("ATENÇÃO! Conforme Lei LGPD, os Bolo(s) NÃO PODEM SER DELETADOS!");
+            System.out.println(lista);
+            System.out.println("Digite o código do bolo para desativa-lo:");
+            System.out.println("Pressione <Enter> para continuar...");
+            testarValor = scan.nextLine();
+            conferirValor = testarValores(testarValor,3);
+            //Testa se o valor é correto através do método testarValores(String a ser testada, e o tipo inteiro de teste,
+            // conforme descrição deste metodo) se sim, é segue o fluxo do código
+            if(conferirValor == true) {
+                //Caso o valor que usuario digitou seja correto, será atribuido o valor de código que o usuário digitou
+                // na variável codigoBolo que servirá de pesquisa na query
+
+                codigoBolo = Integer.parseInt(testarValor);
+                String sql = "SELECT * FROM bolo where id = " + codigoBolo;
+                try(Connection conn = conectar();
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    ResultSet rs = stmt.executeQuery()){
+
+                    if(rs.next()) {
+                        System.out.println("Deseja DESATIVAR o bolo? Digite: 1 - Sim");
+                        System.out.println("Pressione <Enter> para continuar.");
+                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                        testarValor = scan.nextLine();
+                        conferirValor = testarMenu(testarValor);
+                        if(conferirValor == true){
+                            int alterarValor = Integer.parseInt(testarValor);
+                            if(alterarValor == 1){
+                                sql = "UPDATE bolo SET ativo = ? WHERE id = ?";
+                                try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                    stmtUpdate.setBoolean(1, false);
+                                    stmtUpdate.setInt(2, codigoBolo);
+
+                                    int linhasAfetadas = stmtUpdate.executeUpdate();
+                                    if(linhasAfetadas > 0) {
+                                        System.out.println("Bolo desativado com sucesso! Pressione <Enter> para continuar.");
+                                        scan.nextLine();
+                                    }
+                                }catch (Exception e){
+                                    System.out.println("FALHA ao ATUALIZAR  bolo! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                    scan.nextLine();
+                                }
+                            }
+                        }else{
+                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+                    }else{
+                        System.out.println("Bolo não encontrado! Pressione <Enter> para continuar");
+                        scan.nextLine();
+                    }
+                }catch(Exception e){
+                    System.out.println("FALHA ao BUSCAR a lista de bolo(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                    scan.nextLine();
+                    e.printStackTrace();
+                }
+            }else{
+                System.out.println("Valor deve conter apenas numeros. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+        }else{
+            System.out.println("Nenhum bolo cadastrado, ou nenhum bolo ATIVO! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
+    }
+    public static void alterarBolo(){
+        // A variável lista recebe uma "lista" com todos os Bolo Cadastrados
+        String lista = "";
+        lista = listBolo(2);
+
+        //Se a lista for diferente de vazio, o código entrar para parte de alteração de dados de bolo(s)
+        // Se não ela passa a lista, uma mensagem de que não possui bolo(s) cadastrados
+        if(!lista.isEmpty()){
+
+            //Se declarado e iniciado variáveis que serviram para controle de informacoes inseridas pelo usuario
+            String testarValor = "";
+            boolean conferirValor = false;
+            int codigoBolo = 0;
+
+            //A partir daqui é mostrado as mensagens orientaram o usuário a proceder no sistema
+            System.out.println("\n");
+            System.out.println("<<ALTERAR BOLO>>");
+            System.out.println(lista);
+            System.out.println("Digite o código do bolo para alterar as informações:");
+            System.out.println("Pressione <Enter> para continuar...");
+            testarValor = scan.nextLine();
+            conferirValor = testarValores(testarValor,3);
+            //Testa se o valor é correto através do método testarValores(String a ser testada, e o tipo inteiro de teste,
+            // conforme descrição deste metodo) se sim, é segue o fluxo do código
+
+            if(conferirValor == true) {
+                //Caso o valor que usuario digitou seja correto, será atribuido o valor de código que o usuário digitou
+                // na variável codigoCliente que servirá de pesquisa na query
+
+                codigoBolo = Integer.parseInt(testarValor);
+                String sql ="SELECT * FROM bolo where id = " + codigoBolo;
+
+                try(Connection conn = conectar();
+                    PreparedStatement stmt = conn.prepareStatement(sql);
+                    ResultSet rs = stmt.executeQuery()){
+                    //É executada a Query de pesquisa, será necessário confirmar se retornou dados
+                    // Se retornar dados, segue o fluxo de execução, se não, será mostrado uma mensagem que não acho o usuário
+                    if(rs.next()) {
+                        //Ao achar o bolo será perguntado ao usuário, quais os dados que se deseja alterar
+                        System.out.println("<< ALTERAR DADOS BOLO >>");
+                        System.out.println("Bolo: " + rs.getString("sabor"));
+                        System.out.println("Digite: ");
+                        System.out.println("1 - Alterar Preço:");
+                        System.out.println("2 - Alterar Estoque:");
+                        System.out.println("3 - Ativar ou Desativar Bolo");
+                        System.out.println("Pressione <Enter> para continuar.");
+                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                        testarValor = scan.nextLine();
+                        conferirValor = testarMenu(testarValor);
+                        if(conferirValor == true) {
+                            //Se o valor digitado é somente numeros, entra aqui, atribui o valor digitado a uma variável,
+                            // e o fluxo é dado através de um switch case, que permite a alteração dos dados do cliente
+                            // conforme opção digitada, se a opção digitada não for encontrada, será apresentado uma mensagem de erro
+
+                            int alterarValor = Integer.parseInt(testarValor);
+                            switch (alterarValor){
+                                case 1:
+                                    testarValor = "";
+                                    conferirValor = false;
+                                    double preco = 0;
+                                    while(conferirValor == false) {
+                                        // Só sairá do loop quando o valor de telefone do usuário for correto
+                                        System.out.println("Digite o novo preço:");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarValores(testarValor,4);
+
+                                        if (conferirValor == true) {
+                                            testarValor = testarValor.replace(",",".");
+                                            preco = Double.parseDouble(testarValor);
+                                            sql = "UPDATE bolo SET preco = ? WHERE id = ?";
+
+                                            try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                stmtUpdate.setDouble(1, preco);
+                                                stmtUpdate.setInt(2, codigoBolo);
+                                                int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                if(linhasAfetadas > 0) {
+                                                    System.out.println("Preco atualizado com sucesso! Pressione <Enter> para continuar.");
+                                                    scan.nextLine();
+                                                }
+                                            }catch (Exception e){
+                                                System.out.println("FALHA ao ATUALIZAR  bolo! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                scan.nextLine();
+                                            }
+
+                                        } else {
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }
+                                    break;
+                                case 2:
+                                    testarValor = "";
+                                    conferirValor = false;
+                                    int estoque = 0;
+                                    while(conferirValor == false) {
+                                        // Só sairá do loop quando o valor de telefone do usuário for correto
+                                        System.out.println("Digite o novo estoque:");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarValores(testarValor,3);
+
+                                        if (conferirValor == true) {
+                                            estoque = Integer.parseInt(testarValor);
+                                            sql = "UPDATE bolo SET estoque = ? WHERE id = ?";
+
+                                            try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                stmtUpdate.setInt(1, estoque);
+                                                stmtUpdate.setInt(2, codigoBolo);
+                                                int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                if(linhasAfetadas > 0) {
+                                                    System.out.println("Estoque atualizado com sucesso! Pressione <Enter> para continuar.");
+                                                    scan.nextLine();
+                                                }
+                                            }catch (Exception e){
+                                                System.out.println("FALHA ao ATUALIZAR  bolo! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                scan.nextLine();
+                                            }
+
+                                        } else {
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }
+                                    break;
+                                case 3:
+                                    if(rs.getBoolean("ativo") == true){
+                                        System.out.println("Deseja DESATIVAR o bolo? Digite: 1 - Sim");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarMenu(testarValor);
+                                        if(conferirValor == true){
+                                            alterarValor = Integer.parseInt(testarValor);
+                                            if(alterarValor == 1){
+                                                sql = "UPDATE bolo SET ativo = ? WHERE id = ?";
+                                                try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                    stmtUpdate.setBoolean(1, false);
+                                                    stmtUpdate.setInt(2, codigoBolo);
+
+                                                    int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                    if(linhasAfetadas > 0) {
+                                                        System.out.println("Bolo desativado com sucesso! Pressione <Enter> para continuar.");
+                                                        scan.nextLine();
+                                                    }
+                                                }catch (Exception e){
+                                                    System.out.println("FALHA ao ATUALIZAR  bolo! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                    scan.nextLine();
+                                                }
+                                            }
+                                        }else{
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }else{
+                                        System.out.println("Deseja ATIVAR o bolo? Digite: 1 - Sim");
+                                        System.out.println("Pressione <Enter> para continuar.");
+                                        //O Valor passado é testado no método testarMenu(), pois o usuário só pode digitar numeros
+                                        testarValor = scan.nextLine();
+                                        conferirValor = testarMenu(testarValor);
+                                        if(conferirValor == true){
+                                            alterarValor = Integer.parseInt(testarValor);
+                                            if(alterarValor == 1){
+                                                sql = "UPDATE bolo SET ativo = ? WHERE id = ?";
+                                                try (PreparedStatement stmtUpdate = conn.prepareStatement(sql)) {
+                                                    stmtUpdate.setBoolean(1, true);
+                                                    stmtUpdate.setInt(2, codigoBolo);
+
+                                                    int linhasAfetadas = stmtUpdate.executeUpdate();
+                                                    if(linhasAfetadas > 0) {
+                                                        System.out.println("Bolo ativado com sucesso! Pressione <Enter> para continuar.");
+                                                        scan.nextLine();
+                                                    }
+                                                }catch (Exception e){
+                                                    System.out.println("FALHA ao ATUALIZAR  cliente! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                                                    scan.nextLine();
+                                                }
+                                            }
+                                        }else{
+                                            System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                                            scan.nextLine();
+                                        }
+                                    }
+
+                                    break;
+                                default:
+                                    System.out.println("Valor informado para alteração de dados é inválido (Pressione <Enter> para continuar):");
+                                    scan.nextLine();
+                                    break;
+                            }
+                        }else{
+                            System.out.println("Valor deve conter apenas numeros. Favor tentar novamente (Pressione <Enter> para continuar):");
+                            scan.nextLine();
+                        }
+                    }else{
+                        System.out.println("Bolo não encontrado! Pressione <Enter> para continuar");
+                        scan.nextLine();
+                    }
+
+                }catch (Exception e){
+                    System.out.println("FALHA ao BUSCAR a lista de cliente(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                    scan.nextLine();
+                }
+            }else{
+                System.out.println("Valor deve conter apenas numeros. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+        }else{
+            System.out.println("Nenhum bolo cadastrado! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
+
+    }
+    public static void buscarBolo(){
+        String lista = "";
+        String buscar = "";
+        boolean conferirValor = false;
+
+        System.out.println("\n");
+        System.out.println("<<BUSCAR BOLO>>");
+        System.out.println("Digite um sabor para buscar as informações do bolo:");
+        System.out.println("Pressione <Enter> para continuar...");
+        buscar = scan.nextLine();
+
+        conferirValor = testarValores(buscar,1);
+        //Testa se o valor é correto, se sim, é atribuido a variavel nome o nome do usuário
+        if(conferirValor == true) {
+            String sql ="SELECT * FROM bolo where sabor LIKE '" + buscar + "%'";
+
+            try(Connection conn = conectar();
+                PreparedStatement stmt = conn.prepareStatement(sql);
+                ResultSet rs = stmt.executeQuery()){
+
+                while(rs.next()){
+                    boolean boloAtivo = false;
+                    String respoAtivo = "";
+
+                    boloAtivo = rs.getBoolean("ativo");
+
+                    if(boloAtivo == true) {
+                        respoAtivo = "Ativo";
+                    }else {
+                        respoAtivo = "Desativado";
+                    }
+
+                    lista += " Codigo:" + rs.getInt("id") + " | " + " Sabor: " + rs.getString("sabor") +
+                            " | " + " Preço: " + rs.getDouble("preco") + " | " +
+                            " | " + " Estoque: " + rs.getInt("estoque") + " | " +
+                            " Ativo: " + respoAtivo + "\n";
+                }
+            }catch (Exception e){
+                System.out.println("FALHA ao BUSCAR a lista de bolo(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+                scan.nextLine();
+            }
+            if(!lista.isEmpty()){
+                System.out.println("<<LISTAR BOLO>>");
+                System.out.println(lista);
+                System.out.println("Pressione <Enter> para continuar...");
+                scan.nextLine();
+            }else {
+                System.out.println("Nenhum bolo encontrado! Pressione <Enter> para continuar");
+                scan.nextLine();
+            }
+        }else {
+            System.out.println("O sabor deve conter apenas letras. Favor tentar novamente (Pressione <Enter> para continuar):");
+            scan.nextLine();
+        }
+    }
+    public static void listarBolo(){
+        String lista = "";
+
+        System.out.println("\n");
+        System.out.println("Pressione <Enter> para Gerar a Lista de Bolos:");
+        scan.nextLine();
+
+        lista = listBolo(2);
+
+        if(!lista.isEmpty()){
+            System.out.println("<<LISTAR BOLOS>>");
+            System.out.println(lista);
+            System.out.println("Pressione <Enter> para continuar...");
+            scan.nextLine();
+        }else {
+            System.out.println("Nenhum bolo encontrado! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
+
+    }
+    public static String listBolo(int tipoLista){
+        /*
+            COMENTARIO 009:
+ 				O método lisCliente serve para listar os bolos conforme o tipo de passagem de parâmetros, onde:
+ 				      1 - Lista Resumida somente com Numero de Cadastro e Sabor
+ 				      2 - Lista Completa com todos os dados do Bolo
+ 				      3 - Lista Completa com SOMENTE Bolos ATIVOS
+        */
+
+        String resultado = "";
+        String sql ="SELECT * FROM bolo";
+
+        try(Connection conn = conectar();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()){
+
+            while (rs.next()){
+                boolean boloAtivo = false;
+                String respoAtivo = "";
+
+                boloAtivo = rs.getBoolean("ativo");
+
+                if(boloAtivo == true) {
+                    respoAtivo = "Ativo";
+                }else {
+                    respoAtivo = "Desativado";
+                }
+                switch (tipoLista){
+                    case 1:
+                        resultado += " Codigo:" + rs.getInt("id") + " | " + " Sabor: " + rs.getString("sabor") + " | " +
+                                " Ativo: " + respoAtivo + "\n";
+                        break;
+                    case 2:
+                        resultado += " Codigo:" + rs.getInt("id") + " | " + " Sabor: " + rs.getString("sabor") +
+                                " | " + " Preço: " + rs.getDouble("preco") + " | " +
+                                " | " + " Estoque: " + rs.getInt("estoque") + " | " +
+                                " Ativo: " + respoAtivo + "\n";
+                        break;
+                    case 3:
+                        if(rs.getBoolean("ativo") == true){
+                            resultado += " Codigo:" + rs.getInt("id") + " | " + " Sabor: " + rs.getString("sabor") +
+                                    " | " + " Preço: " + rs.getDouble("preco") + " | " +
+                                    " | " + " Estoque: " + rs.getInt("estoque") + " | " +
+                                    " Ativo: " + respoAtivo + "\n";
+                        }
+                        break;
+                    default:
+                        System.out.println("Opção invalida! Favor verificar a passagem de parâmetros em listBolo().");
+                        break;
+                }
+
+
+            }
+
+        }catch (Exception e){
+            System.out.println("FALHA ao fazer a lista de bolo(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+            scan.nextLine();
+        }
+
+
+        return resultado;
+    }
+    public static void cadastrarBolo(){
+        /*
+ 			COMENTARIO 009:
+ 				O método cadastrarCliente serve para cadastrar as informações do cliente, que são:
+ 				nome e telefone, conforme condições exigidas para o usário
+
+		 */
+
+        //Variáveis que irão auxiliar e testar valores inseridos
+        String testarValor = "";
+        boolean conferirValor = false;
+
+        //Variáveis que irão atribuir valores inseridos após verificação
+        String nome = ""; //Não pode conter mais do que 100 caracteres e tem que ser somente letras
+        double valor = 0; // Não pode conter mais do que 10 caracteres e deve ser somente numeros
+        int estoque = 0; // Não pode conter mais do que 10 caracteres e deve ser somente numeros
+
+        //PRIMEIRO TESTE -> Nome do bolo
+        while(conferirValor == false) {
+            // Só sairá do loop quando o valor de nome do usuário for correto
+            System.out.println("\n");
+            System.out.println("<<CADASTRAR BOLO>>");
+            System.out.println("Digite o sabor do bolo (Pressione <Enter> para continuar):");
+            testarValor = scan.nextLine();
+
+            conferirValor = testarValores(testarValor,1);
+            //Testa se o valor é correto, se sim, é atribuido a variavel nome o nome do usuário
+            if(conferirValor == true) {
+                nome = testarValor;
+            }else {
+                System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+        }
+        testarValor = "";
+        conferirValor = false;
+
+        //SEGUNDO TESTE -> Valor do bolo
+        while(conferirValor == false) {
+            // Só sairá do loop quando o valor de telefone do usuário for correto
+            System.out.println("\n");
+            System.out.println("<<CADASTRAR BOLO>>");
+            System.out.println("Digite o valor do bolo (SOMENTE NUMEROS E VIRGULA OU PONTO) (Pressione <Enter> para continuar):");
+            testarValor = scan.nextLine();
+
+            conferirValor = testarValores(testarValor, 4);
+            //Testa se o valor é correto, se sim, é atribuido a variavel email o e-mail do usuário
+
+
+            if(conferirValor == true) {
+                testarValor = testarValor.replace(",",".");
+                valor = Double.parseDouble(testarValor);
+            }else {
+                System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+
+        }
+        testarValor = "";
+        conferirValor = false;
+
+        //TERCEIRO TESTE -> Estoque do bolo
+        while(conferirValor == false) {
+            // Só sairá do loop quando o valor de telefone do usuário for correto
+            System.out.println("\n");
+            System.out.println("<<CADASTRAR BOLO>>");
+            System.out.println("Digite o total de bolo(s) em estoque (SOMENTE NUMEROS) (Pressione <Enter> para continuar):");
+            testarValor = scan.nextLine();
+
+            conferirValor = testarValores(testarValor, 2);
+            //Testa se o valor é correto, se sim, é atribuido a variavel email o e-mail do usuário
+
+            if(conferirValor == true) {
+                estoque = Integer.parseInt(testarValor);
+            }else {
+                System.out.println("Valor infomado é inválido. Favor tentar novamente (Pressione <Enter> para continuar):");
+                scan.nextLine();
+            }
+        }
+        /*
+			COMENTARIO 010:
+				Após confirmar que todas as informações digitadas estão corretas, é possível a inserir no banco de dados
+				os valores do bolo que se deseja cadastrar
+		*/
+        // IMPORTANTE! É INCIADO E ATRIBUIDO na a varável sql o comando de SQL para inserção dos dados
+        String sql ="INSERT INTO bolo (sabor,preco,estoque,ativo) VALUES(?,?,?,?)";
+        try(Connection conn = conectar(); PreparedStatement stmt = conn.prepareStatement(sql)){
+            /*
+             	COMENTARIO 011:
+             		Bloco responsável por executar a operação de inserção do usuário no banco de dados.
+             		O try-with-resources cria automaticamente os objetos Connection e PreparedStatement,
+             		garantindo que ambos sejam fechados ao final da execução, mesmo em caso de erro.
+
+ 					Os métodos setString() associam os valores informados aos parâmetros da instrução SQL,
+ 					substituindo os caracteres '?' presentes na consulta.
+
+ 					Em seguida, executeUpdate() executa o comando SQL e retorna a quantidade de registros
+ 					afetados pela operação. Caso ao menos uma linha seja inserida, uma mensagem de sucesso
+ 					é exibida ao usuário.
+
+ 					 Se ocorrer qualquer exceção durante o processo, a falha é informada e a exceção é encapsulada
+ 					 em uma RuntimeException para tratamento posterior.
+
+ 					 !IMPORTANTE!
+ 					 PreparedStatement stmt = conn.prepareStatement(sql) faz duas coisas, compila e prepara o SQL
+ 					 antes da execução e protege contra o SQL Injection,
+             */
+            stmt.setString(1,nome);
+            stmt.setDouble(2,valor);
+            stmt.setInt(3,estoque);
+            stmt.setBoolean(4,true);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas>0){
+                System.out.println("Bolo salvo com SUCESSO! Pressione <Enter> para continuar:");
+                scan.nextLine();
+            }
+        } catch (Exception e) {
+            System.out.println("FALHA ao salvar o bolo! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+            scan.nextLine();
+            throw new RuntimeException(e);
+        }
+    }
+
+    /*Gerenciar Clientes*/
     public static void gerenciarCliente(){
         //Declaracao da Variaveis da Area gerenciar Cliente
         boolean sairMenuCliente = false;
@@ -723,6 +1683,8 @@ public class Main {
 					1 - Nome: Aceita apenas letras e espaços e até 100 caracteres.
 					2 - Telefone: Aceita apenas números com até 20 caracteres.
 					3 - Codigo: Aceita apenas números com até 10 caracteres.
+					4 - Valor: Aceita apenas numeros, menor ou a 10 caracteres e não pode ser vazia
+					5 - Data: Aceita apenas numeros e barra e ifem, igual a 10 caracteres e não pode ser vazia
 					Retorno: Retona se o valor é verdadeiro ou não
 
 		 */
@@ -750,6 +1712,12 @@ public class Main {
             case 4:
                 //Testa uma variável tipo decimal: se ela é diferente de vazia, se ela é menor e igual a 10 caracteres e se tem somente numeros
                 if(!testarValor.isEmpty() && testarValor.matches("\\d+([,.]\\d{1,2})?")) {
+                    retornarValor = true;
+                }
+            break;
+            case 5:
+                //Testa uma variavel tipo String que vai servir para data. Aceita apenas numeros e barra e ifem, igual a 10 caracteres e não pode ser vazia
+                if(!testarValor.isEmpty() && testarValor.length() == 10 && testarValor.matches("\\d{2}[/-]\\d{2}[/-]\\d{4}")) {
                     retornarValor = true;
                 }
             break;
