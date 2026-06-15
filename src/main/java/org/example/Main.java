@@ -155,6 +155,61 @@ public class Main {
 
     /*Gerenciar Vendas*/
 
+    public static String listVendas(int tipoLista) {
+        String resultado = "";
+        String sql ="SELECT v.id, v.data_venda, v.data_entrega, v.qtd_venda, v.valor_total, c.id AS cliente_id," +
+                "c.nome, c.telefone, b.id AS bolo_id, b.sabor, b.preco FROM venda v INNER JOIN cliente c " +
+                "ON v.cliente_id = c.id INNER JOIN bolo b ON v.bolo_id = b.id";
+
+        try(Connection conn = conectar();
+            PreparedStatement stmt = conn.prepareStatement(sql);
+            ResultSet rs = stmt.executeQuery()) {
+
+            while (rs.next()) {
+                double valorUnit = 0;
+                switch (tipoLista) {
+                    case 1:
+                        valorUnit = rs.getDouble("valor_total") / rs.getInt("qtd_venda");
+
+                        resultado += "Codigo: " + rs.getInt("id") + " | " + " Data de Venda: " + rs.getDate("data_venda") +
+                                " | " + " Data de Entrega: " + rs.getDate("data_entrega") + "\n" +
+                                "Cliente: " + rs.getString("nome") + " | " + " Telefone: " + rs.getString("telefone") + "\n" +
+                                "Bolo: " + rs.getString("sabor") + " | " + "Quantidade: " + rs.getInt("qtd_venda") +
+                                " | " + " Valor Unitário: R$ " + valorUnit + "\n" +
+                                "TOTAL: R$" + rs.getDouble("valor_total");
+                    break;
+
+                    default:
+                        System.out.println("Opção invalida! Favor verificar a passagem de parâmetros em listBolo().");
+                    break;
+                }
+            }
+        }catch (Exception e){
+            System.out.println("FALHA ao fazer a lista de Venda(s)! Favor entrar em contato com a equipe técnica. Pressione <Enter> para continuar:");
+            scan.nextLine();
+        }
+        return resultado;
+    }
+    public static void listarVendas(){
+        String lista = "";
+
+        System.out.println("\n");
+        System.out.println("Pressione <Enter> para Gerar o Relatório de Vendas:");
+        scan.nextLine();
+
+
+        lista = listVendas(1);
+
+        if(!lista.isEmpty()){
+            System.out.println("<<RELATÓRIO DE VENDAS>>");
+            System.out.println(lista);
+            System.out.println("Pressione <Enter> para continuar...");
+            scan.nextLine();
+        }else {
+            System.out.println("Nenhuma venda encontrada! Pressione <Enter> para continuar");
+            scan.nextLine();
+        }
+    }
     public static void cadastrarVenda(){
 
         //Variáveis que irão auxiliar e testar valores inseridos
@@ -462,6 +517,9 @@ public class Main {
                 switch(opcaoMenu) {
                     case 1:
                         cadastrarVenda();
+                    break;
+                    case 2:
+                        listarVendas();
                     break;
                     case 3:
                         sairMenuVendas = true;
